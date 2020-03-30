@@ -1,3 +1,5 @@
+以下内容搜集整理于网络，并会不定期更新
+
 ## **HDFS 组成架构**
 ![](http://www.ysir308.com/wp-content/uploads/2020/03/59fbe6f7e89d979b54336649461c03bc.png)
 
@@ -49,7 +51,7 @@
  7. 客户端开始往dn1上传第一个Block（先从磁盘读取数据放到一个本地内存缓存），以Packet为单位，dn1收到一个Packet就会传给dn2，dn2传给dn3；dn1每传一个packet会放入一个应答队列等待应答。
  8. 当一个Block传输完成之后，客户端再次请求NameNode上传第二个Block的服务器。（重复执行3-7步）。
 
-## **HDFS 读数据流程**
+## **HDFS 数据读流程**
 ![](http://www.ysir308.com/wp-content/uploads/2020/03/d6d2ec85486809fc5e1ab785b67f9720.png)
 
 1. 客户端通过Distributed FileSystem向NameNode请求下载文件，NameNode通过查询元数据，找到文件块所在的DataNode地址。
@@ -83,22 +85,22 @@ SecondaryNamenode，专门用于 Fsimage 和 Edits 的合并，辅助 NameNode �
 （1）通常情况下，SecondaryNameNode 每隔一小时执行一次。在 hdfs-default.xml 文件中配置。
 ```xml
 <property>
-  <name>dfs.namenode.checkpoint.period</name>
-  <value>3600</value>
+	<name>dfs.namenode.checkpoint.period</name>
+	<value>3600</value>
 </property>
 ```
 （2）每隔一分钟检查一次客户端操作次数，当操作次数达到100万时，执行一次。
 ```xml
 <property>
-  <name>dfs.namenode.checkpoint.txns</name>
-  <value>1000000</value>
-<description>操作动作次数</description>
+	<name>dfs.namenode.checkpoint.txns</name>
+	<value>1000000</value>
+	<description>操作动作次数</description>
 </property>
 
 <property>
-  <name>dfs.namenode.checkpoint.check.period</name>
-  <value>60</value>
-<description> 1分钟检查一次操作次数</description>
+	<name>dfs.namenode.checkpoint.check.period</name>
+	<value>60</value>
+	<description> 1分钟检查一次操作次数</description>
 </property >
 ```
 
@@ -135,7 +137,6 @@ HDFS采用一种称为机架感知的策略来改进数据的可靠性、可用�
 
 ## **如何删除旧节点（节点动态下线）**
 节点动态下线有两种方式：白名单和黑名单操作。
-白名单
 1、白名单：白名单即 Hadoop 根目录下面的 etc/hadoop/dfs.hosts 文件（如果没有，请创建）。添加到白名单的主机节点都允许访问 NameNode，不在白名单的主机节点，都不允许访问 NameNode。
 白名单中存储允许访问 NameNode 的主机名称，每行一个。
 具体下线步骤：
@@ -143,8 +144,8 @@ HDFS采用一种称为机架感知的策略来改进数据的可靠性、可用�
 （2）在 NameNode 的 hdfs-site.xml 文件中配置白名单属性：
 ```xml
 <property>
-<name>dfs.hosts</name>
-<value>/opt/module/hadoop-2.7.2/etc/hadoop/dfs.hosts</value>
+	<name>dfs.hosts</name>
+	<value>/opt/module/hadoop-2.7.2/etc/hadoop/dfs.hosts</value>
 </property>
 ```
 （3）将 hdfs-site.xml 同步到其它节点。
@@ -158,8 +159,8 @@ HDFS采用一种称为机架感知的策略来改进数据的可靠性、可用�
 （2）在 hdfs-site.xml 文件中增加黑名单属性：
 ```xml
 <property>
-<name>dfs.hosts.exclude</name>
-      <value>/opt/module/hadoop-2.7.2/etc/hadoop/dfs.hosts.exclude</value>
+	<name>dfs.hosts.exclude</name>
+	<value>/opt/module/hadoop-2.7.2/etc/hadoop/dfs.hosts.exclude</value>
 </property>
 ```
 （3）执行 hdfs dfsadmin -refreshNodes 刷新 NameNode。
@@ -168,8 +169,19 @@ HDFS采用一种称为机架感知的策略来改进数据的可靠性、可用�
 （6）当退役节点状态为 decommissioned 时，说明文件复制完成。
 （7）执行 ./start-balancer.sh 命令实现集群数据平衡
 
+## **关于集群安全模式**
+在 NameNode 启动时，首先会进行合并 Fsimage 镜像文件和 Edits 日志文件，合并成功后会创建一个新的 Fsimage 文件和 Edits 文件。在这个过程期间。整个 NameNode 处于安全模式，在此期间，DataNode 会向 NameNode 发送最新的文件块列表信息。在安全模式期间，整个集群中的文件是只读的。
 
+何时退出安全模式？
+> 如果整个文件系统证据哦给你99.9%的文件块满足最小副本级别，NameNode 会在30秒之后推出安全模式。
 
+在集群正常运行期间也可以进入安全模式，相关命令如下：
 
+- 查看安全模式状态 `bin/hdfs dfsadmin -safemode get`
+- 进入安全模式状态 `bin/hdfs dfsadmin -safemode enter`
+- 离开安全模式状态 `bin/hdfs dfsadmin -safemode leave`
+- 等待安全模式状态 `bin/hdfs dfsadmin -safemode wait`
 
+## **Hadoop 高可用**
 
+请参见 [Hadoop HA](http://www.ysir308.com/archives/3035 "Hadoop HA")
