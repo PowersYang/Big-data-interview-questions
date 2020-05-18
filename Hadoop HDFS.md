@@ -1,4 +1,4 @@
-[toc]
+[TOC]
 
 ## 1、HDFS组成架构
 ![](./images/hdfs.png)
