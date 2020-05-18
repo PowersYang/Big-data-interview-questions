@@ -92,3 +92,5 @@ class WordCountReducer extends Reducer<Text, IntWritable, Text, IntWritable> {
     }
 }
 ```
+
+## 2、
