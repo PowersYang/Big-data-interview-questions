@@ -1,0 +1,2 @@
+# 1、线程状态
+NEW（新建）、RUNNABLE（就绪）、BLOCKED（阻塞）、等待（WATING）、TIMED_WATING（过时不候）、TERMINATED（终结）
